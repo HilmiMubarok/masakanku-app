@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../widgets/recipe_card.dart';
+import 'add_recipe_screen.dart';
 
 class RecipesScreen extends StatefulWidget {
   const RecipesScreen({super.key});
@@ -108,6 +109,16 @@ class _RecipesScreenState extends State<RecipesScreen> with SingleTickerProvider
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddRecipeScreen()),
+          );
+        },
+        backgroundColor: colors.mainPink,
+        child: const Icon(Icons.add_rounded, color: Colors.white),
       ),
     );
   }
