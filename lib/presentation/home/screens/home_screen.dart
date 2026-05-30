@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../recipes/widgets/recipe_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -144,6 +145,65 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 32),
+
+            // Today's Pick Title
+            Text(
+              'Mungkin kamu suka ini',
+              style: textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 16),
+
+            // Today's Pick Recipe Card
+            RecipeCard(
+              title: 'Ayam Goreng Mentega',
+              time: '30 mnt',
+              calories: '320 kcal',
+              isGeneratedByAI: true,
+              imageColor: colors.secondaryPink,
+              icon: Icons.set_meal_rounded,
+            ),
+            const SizedBox(height: 32),
+
+            // Daily Kitchen Tips
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colors.lavenderAccent.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: colors.lavenderAccent.withValues(alpha: 0.5)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.lightbulb_outline_rounded, color: colors.lavenderAccent, size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tips Dapur Hari Ini',
+                          style: textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colors.onBackground,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Biar mata nggak pedih pas potong bawang, coba simpan bawang di kulkas dulu selama 15 menit.',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32), // extra padding for bottom scrolling
           ],
         ),
       ),
