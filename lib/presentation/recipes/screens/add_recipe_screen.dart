@@ -84,6 +84,9 @@ class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
         1, // Default servings
         time,
         calories,
+        null, // protein
+        null, // carbs
+        null, // fat
         _ingredients,
         _steps,
       );

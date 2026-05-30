@@ -10,37 +10,82 @@ Always prioritize:
 
 Never invent unavailable ingredients unless clearly marked as optional.
 
-Always return valid JSON.`;
+CRITICAL INSTRUCTION: You MUST return a STRICT and VALID JSON object with NO markdown formatting, NO comments, and NO code blocks around it. The response must start with '{' and end with '}'.`;
 
 export const INTENT_PROMPTS = {
   recipe_generation: `Generate a realistic recipe using the provided ingredients.
 
-Return:
-- title
-- description
-- ingredients
-- steps
+You MUST return the output in the EXACT JSON format below:
+{
+  "title": "String",
+  "description": "String",
+  "servings": Number,
+  "cooking_time_minutes": Number,
+  "difficulty": "String (e.g., 'mudah', 'sedang', 'sulit')",
+  "calories": Number,
+  "protein": Number,
+  "carbs": Number,
+  "fat": Number,
+  "ingredients": [
+    {
+      "name": "String",
+      "quantity": Number,
+      "unit": "String (e.g., 'gram', 'ml', 'siung', 'buah', 'secukupnya')"
+    }
+  ],
+  "steps": [
+    {
+      "step": Number,
+      "instruction": "String"
+    }
+  ]
+}
 
-Return valid JSON only.`,
+Return valid JSON ONLY.`,
   recipe_modification: `Modify the existing recipe based on the provided instruction.
 
-Return:
-- title
-- ingredients
-- steps
+You MUST return the output in the EXACT JSON format below:
+{
+  "title": "String",
+  "description": "String",
+  "servings": Number,
+  "cooking_time_minutes": Number,
+  "difficulty": "String",
+  "calories": Number,
+  "protein": Number,
+  "carbs": Number,
+  "fat": Number,
+  "ingredients": [
+    {
+      "name": "String",
+      "quantity": Number,
+      "unit": "String"
+    }
+  ],
+  "steps": [
+    {
+      "step": Number,
+      "instruction": "String"
+    }
+  ]
+}
 
-Return valid JSON only.`,
+Return valid JSON ONLY.`,
   ingredient_substitution: `Provide alternatives for the missing ingredient.
 
-Return:
-- ingredient
-- alternatives (array of strings)
+You MUST return the output in the EXACT JSON format below:
+{
+  "ingredient": "String",
+  "alternatives": ["String", "String"]
+}
 
-Return valid JSON only.`,
+Return valid JSON ONLY.`,
   cooking_assistant: `Provide an answer or explanation for the cooking question.
 
-Return:
-- answer
+You MUST return the output in the EXACT JSON format below:
+{
+  "answer": "String"
+}
 
-Return valid JSON only.`
+Return valid JSON ONLY.`
 };

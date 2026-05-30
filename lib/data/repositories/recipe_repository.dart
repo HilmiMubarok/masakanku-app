@@ -38,16 +38,20 @@ class RecipeRepository {
     int servings,
     int cookingTime,
     int? calories,
+    int? protein,
+    int? carbs,
+    int? fat,
     List<Map<String, dynamic>> ingredients,
-    List<String> steps,
-  ) async {
+    List<String> steps, {
+    String source = 'manual',
+  }) async {
     // 1. Insert resep
     final recipeRes = await _supabase.from('recipes').insert({
       'user_id': _userId,
       'title': title,
       'servings': servings,
       'cooking_time': cookingTime,
-      'source': 'manual',
+      'source': source,
     }).select();
 
     if (recipeRes.isEmpty) {
@@ -56,11 +60,14 @@ class RecipeRepository {
 
     final recipeId = recipeRes.first['id'];
 
-    // 2. Insert nutrisi jika ada kalori
-    if (calories != null) {
+    // 2. Insert nutrisi jika ada data nutrisi
+    if (calories != null || protein != null || carbs != null || fat != null) {
       await _supabase.from('recipe_nutrition').insert({
         'recipe_id': recipeId,
-        'calories': calories,
+        if (calories != null) 'calories': calories,
+        if (protein != null) 'protein': protein,
+        if (carbs != null) 'carbs': carbs,
+        if (fat != null) 'fat': fat,
       });
     }
 

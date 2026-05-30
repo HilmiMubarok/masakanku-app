@@ -124,7 +124,7 @@ class RecipeDetailScreen extends ConsumerWidget {
                   else
                     const Text('Tidak ada bahan-bahan.'),
                   
-                  if (recipe.calories != null) ...[
+                  if (recipe.calories != null || recipe.protein != null || recipe.carbs != null || recipe.fat != null) ...[
                     const SizedBox(height: 32),
                     Text(
                       'Kandungan Nutrisi (per porsi)',
@@ -132,9 +132,12 @@ class RecipeDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildNutritionBox(context, 'Kalori', recipe.calories.toString(), 'kcal', colors),
+                        if (recipe.calories != null) _buildNutritionBox(context, 'Kalori', recipe.calories.toString(), 'kcal', colors),
+                        if (recipe.protein != null) _buildNutritionBox(context, 'Protein', recipe.protein.toString(), 'g', colors),
+                        if (recipe.carbs != null) _buildNutritionBox(context, 'Karbo', recipe.carbs.toString(), 'g', colors),
+                        if (recipe.fat != null) _buildNutritionBox(context, 'Lemak', recipe.fat.toString(), 'g', colors),
                       ],
                     ),
                   ],

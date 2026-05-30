@@ -49,7 +49,7 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> with SingleTicker
           unselectedLabelStyle: textTheme.labelLarge,
           tabs: const [
             Tab(text: 'Tersimpan'),
-            Tab(text: 'Terakhir Dibuat'),
+            Tab(text: 'Riwayat Memasak'),
           ],
         ),
       ),
