@@ -1,16 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../recipes/widgets/recipe_card.dart';
-import '../../ai_assistant/screens/ai_generated_result_screen.dart';
 import '../../../domain/models/recipe.dart';
+import '../../pantry/providers/pantry_provider.dart';
+import '../../recipes/providers/recipe_provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppColors>()!;
     final textTheme = Theme.of(context).textTheme;
+
+    final pantryState = ref.watch(pantryProvider);
+    final recipeState = ref.watch(recipesProvider);
+
+    String pantryText = 'Lagi ngecek kulkas...';
+    pantryState.when(
+      data: (items) {
+        if (items.isEmpty) {
+          pantryText = 'Kulkas kamu kosong nih! Yuk isi dulu biar bisa masak enak.';
+        } else {
+          final names = items.take(3).map((e) => e.ingredient?.name ?? 'Bahan').join(', ');
+          final more = items.length > 3 ? ' dkk' : '';
+          pantryText = 'Stok kamu ada $names$more nih. Sini aku bantuin racik 3 ide menu!';
+        }
+      },
+      loading: () => pantryText = 'Lagi ngecek kulkas...',
+      error: (_, __) => pantryText = 'Gagal mengecek isi kulkas.',
+    );
+
+    List<Recipe> recentRecipes = [];
+    recipeState.whenData((recipes) {
+      recentRecipes = List.from(recipes);
+      recentRecipes = recentRecipes.reversed.take(5).toList();
+    });
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -54,8 +80,16 @@ class HomeScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                gradient: LinearGradient(
+                  colors: [
+                    colors.mainPink.withValues(alpha: 0.1),
+                    colors.peachAccent.withValues(alpha: 0.2),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 2),
                 boxShadow: [
                   BoxShadow(
                     color: colors.mainPink.withValues(alpha: 0.12),
@@ -70,45 +104,62 @@ class HomeScreen extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: colors.matchaGreen.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(12),
+                          color: colors.surface,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colors.matchaGreen.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        child: Icon(Icons.auto_awesome, color: colors.matchaGreen.withValues(alpha: 0.8)),
+                        child: Icon(Icons.auto_awesome_rounded, color: colors.matchaGreen, size: 24),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          '"Stok kamu ada telur, sawi, sama ayam nih. Sini aku bantuin racik 3 ide menu!"',
-                          style: textTheme.bodyMedium?.copyWith(
+                          '"$pantryText"',
+                          style: textTheme.bodyLarge?.copyWith(
                             fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w600,
+                            color: colors.bodyText,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Silakan buka tab Kulkas dan tekan ikon ✨ untuk membuat resep!')),
+                          const SnackBar(content: Text('Silakan buka tab Kulkas dan tekan tombol Magic AI untuk membuat resep!')),
                         );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.mainPink,
                         foregroundColor: Colors.white,
-                        elevation: 0,
+                        elevation: 4,
+                        shadowColor: colors.mainPink.withValues(alpha: 0.4),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: Text(
-                        'Bikinin Resep Dong',
-                        style: textTheme.labelLarge?.copyWith(color: Colors.white),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.auto_awesome_rounded, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Bikinin Resep Dong',
+                            style: textTheme.labelLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -157,29 +208,74 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // Today's Pick Title
-            Text(
-              'Mungkin kamu suka ini',
-              style: textTheme.headlineMedium,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Resep Terbarumu',
+                  style: textTheme.headlineMedium,
+                ),
+                if (recentRecipes.isNotEmpty)
+                  Icon(Icons.arrow_forward_rounded, color: colors.outlineVariant),
+              ],
             ),
             const SizedBox(height: 16),
 
-            // Today's Pick Recipe Card
-            RecipeCard(
-              recipe: Recipe(
-                id: 'dummy',
-                userId: 'dummy',
-                title: 'Ayam Goreng Mentega',
-                cookingTime: 30,
-                source: 'ai',
-                servings: 2,
-              ),
-              title: 'Ayam Goreng Mentega',
-              time: '30 mnt',
-              calories: '320 kcal',
-              isGeneratedByAI: true,
-              imageColor: colors.secondaryPink,
-              icon: Icons.set_meal_rounded,
-              imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80',
+            // Recipe Carousel
+            recipeState.when(
+              data: (_) {
+                if (recentRecipes.isEmpty) {
+                  return Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: colors.surface,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+                    ),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          Icon(Icons.menu_book_rounded, size: 48, color: colors.outlineVariant),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Belum ada resep tersimpan.\nCoba minta AI bikinin resep yuk!',
+                            textAlign: TextAlign.center,
+                            style: textTheme.bodyMedium?.copyWith(color: colors.outline),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return SizedBox(
+                  height: 240,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none,
+                    itemCount: recentRecipes.length,
+                    separatorBuilder: (context, index) => const SizedBox(width: 16),
+                    itemBuilder: (context, index) {
+                      final recipe = recentRecipes[index];
+                      // Adjust width so we can see part of the next card
+                      return SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.75,
+                        child: RecipeCard(
+                          recipe: recipe,
+                          title: recipe.title,
+                          time: '${recipe.cookingTime} mnt',
+                          calories: recipe.calories != null ? '${recipe.calories} kcal' : '-',
+                          isGeneratedByAI: recipe.source == 'ai',
+                          imageColor: index % 2 == 0 ? colors.secondaryPink : colors.lavenderAccent,
+                          icon: Icons.set_meal_rounded,
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) => Center(child: Text('Gagal memuat resep: $err')),
             ),
             const SizedBox(height: 32),
 
@@ -221,7 +317,7 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 32), // extra padding for bottom scrolling
+            const SizedBox(height: 32),
           ],
         ),
       ),
