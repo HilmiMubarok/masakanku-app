@@ -8,6 +8,7 @@ class Recipe {
   final int servings;
   final int cookingTime;
   final String? source;
+  final int? calories;
   final List<RecipeIngredient> ingredients;
   final List<RecipeStep> steps;
 
@@ -19,6 +20,7 @@ class Recipe {
     required this.servings,
     required this.cookingTime,
     this.source,
+    this.calories,
     this.ingredients = const [],
     this.steps = const [],
   });
@@ -32,6 +34,7 @@ class Recipe {
       servings: json['servings'] as int? ?? 1,
       cookingTime: json['cooking_time'] as int? ?? 0,
       source: json['source'] as String?,
+      calories: _parseCalories(json['recipe_nutrition']),
       ingredients: (json['recipe_ingredients'] as List<dynamic>?)
               ?.map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -41,6 +44,16 @@ class Recipe {
               .toList() ??
           [],
     );
+  }
+
+  static int? _parseCalories(dynamic nutritionData) {
+    if (nutritionData == null) return null;
+    if (nutritionData is List && nutritionData.isNotEmpty) {
+      return nutritionData.first['calories'] as int?;
+    } else if (nutritionData is Map) {
+      return nutritionData['calories'] as int?;
+    }
+    return null;
   }
 }
 

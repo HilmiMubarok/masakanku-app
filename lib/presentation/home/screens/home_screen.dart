@@ -93,9 +93,8 @@ class HomeScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const AIGeneratedResultScreen()),
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Silakan buka tab Kulkas dan tekan ikon ✨ untuk membuat resep!')),
                         );
                       },
                       style: ElevatedButton.styleFrom(

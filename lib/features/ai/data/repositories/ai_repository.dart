@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/ai_recipe.dart';
-import '../models/ai_request.dart';
-import '../repositories/i_ai_repository.dart';
+import '../../domain/models/ai_recipe.dart';
+import '../../domain/models/ai_request.dart';
+import '../../domain/repositories/i_ai_repository.dart';
 
 class AIRepository implements IAIRepository {
   final SupabaseClient _supabaseClient;

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../recipes/screens/cooking_mode_screen.dart';
 import '../../../domain/models/recipe.dart';
+import '../../../features/ai/domain/models/ai_recipe.dart';
 
 class AIGeneratedResultScreen extends StatelessWidget {
-  const AIGeneratedResultScreen({super.key});
+  final AIRecipe aiRecipe;
+  const AIGeneratedResultScreen({super.key, required this.aiRecipe});
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +56,15 @@ class AIGeneratedResultScreen extends StatelessWidget {
             const SizedBox(height: 32),
             
             Text(
-              'Ayam Goreng Mentega',
+              aiRecipe.title,
               style: textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            
+            Text(
+              aiRecipe.description,
+              style: textTheme.bodyLarge?.copyWith(color: colors.outline),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -63,9 +72,9 @@ class AIGeneratedResultScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildInfoChip(context, Icons.schedule_rounded, '30 mnt', colors),
+                _buildInfoChip(context, Icons.schedule_rounded, '${aiRecipe.cookingTimeMinutes} mnt', colors),
                 const SizedBox(width: 12),
-                _buildInfoChip(context, Icons.local_fire_department_rounded, '320 kcal', colors),
+                _buildInfoChip(context, Icons.speed_rounded, aiRecipe.difficulty.toUpperCase(), colors),
               ],
             ),
             const SizedBox(height: 32),
@@ -89,9 +98,7 @@ class AIGeneratedResultScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  _buildIngredientItem(context, 'Ayam Potong', '500g', colors),
-                  _buildIngredientItem(context, 'Bawang Bombai', '1 buah', colors),
-                  _buildIngredientItem(context, 'Mentega', '2 sdm', colors),
+                  ...aiRecipe.ingredients.map((ing) => _buildIngredientItem(context, ing.name, '${ing.quantity} ${ing.unit}', colors)),
                 ],
               ),
             ),
@@ -102,9 +109,7 @@ class AIGeneratedResultScreen extends StatelessWidget {
               style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            _buildStepItem(context, '1', 'Goreng ayam hingga kecoklatan. Angkat dan tiriskan.', colors),
-            _buildStepItem(context, '2', 'Tumis bawang bombai dengan mentega hingga harum.', colors),
-            _buildStepItem(context, '3', 'Masukkan ayam goreng, tambahkan kecap manis dan lada. Aduk rata.', colors),
+            ...aiRecipe.steps.map((step) => _buildStepItem(context, step.step.toString(), step.instruction, colors)),
             
             const SizedBox(height: 100), // Space for bottom buttons
           ],
@@ -146,14 +151,14 @@ class AIGeneratedResultScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => CookingModeScreen(
-                        title: 'Ayam Goreng Mentega',
+                        title: aiRecipe.title,
                         recipe: Recipe(
-                          id: 'dummy',
-                          userId: 'dummy',
-                          title: 'Ayam Goreng Mentega',
-                          cookingTime: 30,
+                          id: 'ai-generated-${DateTime.now().millisecondsSinceEpoch}',
+                          userId: 'user', // Need proper user logic later
+                          title: aiRecipe.title,
+                          cookingTime: aiRecipe.cookingTimeMinutes,
                           source: 'ai',
-                          servings: 2,
+                          servings: aiRecipe.servings,
                         ),
                       )),
                     );

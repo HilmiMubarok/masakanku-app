@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/recipe.dart';
 import '../../../core/theme/app_colors.dart';
+import '../providers/recipe_provider.dart';
 import 'cooking_mode_screen.dart';
 
-class RecipeDetailScreen extends StatelessWidget {
+class RecipeDetailScreen extends ConsumerWidget {
   const RecipeDetailScreen({
     super.key,
     required this.recipe,
@@ -24,7 +26,7 @@ class RecipeDetailScreen extends StatelessWidget {
   final String? imageUrl;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppColors>()!;
     final textTheme = Theme.of(context).textTheme;
 
@@ -40,6 +42,13 @@ class RecipeDetailScreen extends StatelessWidget {
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
+            actions: [
+              if (recipe.id != 'dummy')
+                IconButton(
+                  icon: const Icon(Icons.delete_rounded, color: Colors.white),
+                  onPressed: () => _showDeleteConfirmation(context, ref),
+                ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -115,21 +124,20 @@ class RecipeDetailScreen extends StatelessWidget {
                   else
                     const Text('Tidak ada bahan-bahan.'),
                   
-                  const SizedBox(height: 32),
-                  Text(
-                    'Kandungan Nutrisi (per porsi)',
-                    style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildNutritionBox(context, 'Kalori', '160', 'kcal', colors),
-                      _buildNutritionBox(context, 'Protein', '12', 'g', colors),
-                      _buildNutritionBox(context, 'Karbo', '4', 'g', colors),
-                      _buildNutritionBox(context, 'Lemak', '10', 'g', colors),
-                    ],
-                  ),
+                  if (recipe.calories != null) ...[
+                    const SizedBox(height: 32),
+                    Text(
+                      'Kandungan Nutrisi (per porsi)',
+                      style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        _buildNutritionBox(context, 'Kalori', recipe.calories.toString(), 'kcal', colors),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 100), // Space for bottom button
                 ],
               ),
@@ -217,6 +225,40 @@ class RecipeDetailScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Hapus Resep?'),
+          content: Text('Apakah kamu yakin ingin menghapus resep "$title"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                ref.read(recipesProvider.notifier).deleteRecipe(recipe.id);
+                Navigator.pop(context); // Close detail screen
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Resep berhasil dihapus')),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
     );
   }
 

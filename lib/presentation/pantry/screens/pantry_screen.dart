@@ -5,6 +5,9 @@ import '../../../core/theme/app_colors.dart';
 import '../widgets/ingredient_card.dart';
 import 'add_ingredient_screen.dart';
 import '../providers/pantry_provider.dart';
+import '../../../features/ai/providers/ai_recipe_generator_provider.dart';
+import '../../ai_assistant/screens/ai_generated_result_screen.dart';
+import '../../../domain/models/pantry_item.dart';
 
 class PantryScreen extends ConsumerStatefulWidget {
   const PantryScreen({super.key});
@@ -37,6 +40,60 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
       case 'rice_bowl_rounded': return Icons.rice_bowl_rounded;
       case 'grain_rounded': return Icons.grain_rounded;
       default: return Icons.fastfood_rounded;
+    }
+  }
+
+  void _onGenerateRecipe(BuildContext context, WidgetRef ref, List<PantryItem>? items) async {
+    if (items == null || items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pantry kosong. Tambahkan bahan dulu!')),
+      );
+      return;
+    }
+
+    final ingredients = items.map((i) => i.ingredient?.name ?? '').where((n) => n.isNotEmpty).toList();
+
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: Theme.of(context).extension<AppColors>()?.mainPink),
+              const SizedBox(height: 16),
+              Text('AI sedang meracik resep...', style: Theme.of(context).textTheme.bodyLarge),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final recipe = await ref.read(aiRecipeGeneratorProvider.notifier).generateRecipe(ingredients);
+      if (context.mounted) {
+        Navigator.pop(context); // close loading dialog
+        if (recipe != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => AIGeneratedResultScreen(aiRecipe: recipe)),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal membuat resep: $e')),
+        );
+      }
     }
   }
 
@@ -181,6 +238,43 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
         backgroundColor: colors.mainPink,
         child: const Icon(Icons.add, color: Colors.white),
       ),
+      bottomNavigationBar: pantryAsync.hasValue && pantryAsync.value != null && pantryAsync.value!.isNotEmpty
+          ? Container(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              decoration: BoxDecoration(
+                color: colors.surface,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: ElevatedButton.icon(
+                  onPressed: () => _onGenerateRecipe(context, ref, pantryAsync.value),
+                  icon: const Icon(Icons.auto_awesome_rounded, color: Colors.white),
+                  label: Text(
+                    'Tanya AI untuk Resep',
+                    style: textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.mainPink,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 }

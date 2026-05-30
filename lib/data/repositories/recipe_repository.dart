@@ -24,7 +24,8 @@ class RecipeRepository {
             *,
             ingredients (*)
           ),
-          recipe_steps (*)
+          recipe_steps (*),
+          recipe_nutrition (*)
         ''')
         .eq('user_id', _userId)
         .order('created_at', ascending: false);
@@ -37,7 +38,7 @@ class RecipeRepository {
     int servings,
     int cookingTime,
     int? calories,
-    List<String> ingredients,
+    List<Map<String, dynamic>> ingredients,
     List<String> steps,
   ) async {
     // 1. Insert resep
@@ -64,7 +65,11 @@ class RecipeRepository {
     }
 
     // 3. Insert bahan (ingredients & recipe_ingredients)
-    for (final ingName in ingredients) {
+    for (final ing in ingredients) {
+      final ingName = ing['name'] as String;
+      final quantity = ing['quantity'] as double;
+      final unit = ing['unit'] as String;
+
       // Cek apakah ingredient dengan nama ini sudah ada (case-insensitive)
       final existingIng = await _supabase
           .from('ingredients')
@@ -90,8 +95,8 @@ class RecipeRepository {
       await _supabase.from('recipe_ingredients').insert({
         'recipe_id': recipeId,
         'ingredient_id': ingredientId,
-        'quantity': 1, // Default untuk string gabungan
-        'unit': '',
+        'quantity': quantity,
+        'unit': unit,
       });
     }
 
@@ -107,5 +112,9 @@ class RecipeRepository {
     if (stepsToInsert.isNotEmpty) {
       await _supabase.from('recipe_steps').insert(stepsToInsert);
     }
+  }
+
+  Future<void> deleteRecipe(String recipeId) async {
+    await _supabase.from('recipes').delete().eq('id', recipeId).eq('user_id', _userId);
   }
 }

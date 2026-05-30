@@ -98,7 +98,7 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> with SingleTicker
                     recipe: recipe,
                     title: recipe.title,
                     time: '${recipe.cookingTime} mnt',
-                    calories: '-', // No nutrition tracking in MVP yet
+                    calories: recipe.calories != null ? '${recipe.calories} kcal' : '-',
                     isGeneratedByAI: recipe.source == 'ai',
                     imageColor: colors.lavenderAccent,
                     icon: Icons.set_meal_rounded,

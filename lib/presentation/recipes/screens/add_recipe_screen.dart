@@ -16,8 +16,11 @@ class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
   final _timeController = TextEditingController();
   final _calController = TextEditingController();
 
-  final _ingredientController = TextEditingController();
-  final List<String> _ingredients = [];
+  final _ingredientNameController = TextEditingController();
+  final _ingredientQtyController = TextEditingController();
+  String _selectedIngredientUnit = 'gram';
+  final List<String> _units = ['gram', 'kg', 'ml', 'liter', 'butir', 'ikat', 'siung', 'sdm', 'sdt', 'secukupnya', 'lembar', 'batang', 'buah', 'pcs'];
+  final List<Map<String, dynamic>> _ingredients = [];
 
   final _stepController = TextEditingController();
   final List<String> _steps = [];
@@ -27,16 +30,28 @@ class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
     _titleController.dispose();
     _timeController.dispose();
     _calController.dispose();
-    _ingredientController.dispose();
+    _ingredientNameController.dispose();
+    _ingredientQtyController.dispose();
     _stepController.dispose();
     super.dispose();
   }
 
   void _addIngredient() {
-    if (_ingredientController.text.trim().isNotEmpty) {
+    final name = _ingredientNameController.text.trim();
+    if (name.isNotEmpty) {
+      final qtyStr = _ingredientQtyController.text.trim();
+      final qty = double.tryParse(qtyStr.replaceAll(RegExp(r',|\s'), '.')) ?? 1.0;
+      final unit = _selectedIngredientUnit;
+
       setState(() {
-        _ingredients.add(_ingredientController.text.trim());
-        _ingredientController.clear();
+        _ingredients.add({
+          'name': name,
+          'quantity': qty,
+          'unit': unit,
+        });
+        _ingredientNameController.clear();
+        _ingredientQtyController.clear();
+        _selectedIngredientUnit = 'gram';
       });
     }
   }
@@ -129,7 +144,7 @@ class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
               children: [
                 Expanded(child: _buildTextField(controller: _timeController, hint: 'Waktu (mis: 15 mnt)', icon: Icons.schedule_rounded, colors: colors)),
                 const SizedBox(width: 12),
-                Expanded(child: _buildTextField(controller: _calController, hint: 'Kalori (mis: 320)', icon: Icons.local_fire_department_rounded, colors: colors)),
+                Expanded(child: _buildTextField(controller: _calController, hint: 'Kalori (opsional)', icon: Icons.local_fire_department_rounded, colors: colors)),
               ],
             ),
             const SizedBox(height: 32),
@@ -137,25 +152,59 @@ class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
             // Ingredients
             _buildSectionTitle('Bahan-bahan', textTheme, colors),
             const SizedBox(height: 16),
-            ..._ingredients.map((ing) => _buildListItem(ing, () {
-              setState(() => _ingredients.remove(ing));
-            }, colors)),
+            ..._ingredients.map((ing) => _buildListItem(
+              '${ing['name']} (${ing['quantity']} ${ing['unit']})'.trim(), 
+              () {
+                setState(() => _ingredients.remove(ing));
+              }, 
+              colors
+            )),
             const SizedBox(height: 8),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Expanded(
-                  child: _buildTextField(
-                    controller: _ingredientController,
-                    hint: 'Ketik bahan...',
-                    icon: Icons.kitchen_rounded,
-                    colors: colors,
-                  ),
+                _buildTextField(
+                  controller: _ingredientNameController,
+                  hint: 'Nama Bahan (mis: Bawang Merah)',
+                  icon: Icons.kitchen_rounded,
+                  colors: colors,
                 ),
-                const SizedBox(width: 12),
-                IconButton.filled(
+                const SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: _buildTextField(
+                        controller: _ingredientQtyController,
+                        hint: 'Jml (mis: 3)',
+                        icon: Icons.numbers_rounded,
+                        colors: colors,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: _buildDropdown(
+                        value: _selectedIngredientUnit,
+                        items: _units,
+                        onChanged: (val) => setState(() => _selectedIngredientUnit = val!),
+                        icon: Icons.scale_rounded,
+                        colors: colors,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
                   onPressed: _addIngredient,
-                  style: IconButton.styleFrom(backgroundColor: colors.matchaGreen),
-                  icon: const Icon(Icons.add_rounded),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.matchaGreen,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text('Tambah Bahan'),
                 ),
               ],
             ),
@@ -248,6 +297,32 @@ class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: colors.mainPink),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+    required IconData icon,
+    required AppColors colors,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          isExpanded: true,
+          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.outline),
+          items: items.map((unit) => DropdownMenuItem(value: unit, child: Text(unit))).toList(),
+          onChanged: onChanged,
         ),
       ),
     );
