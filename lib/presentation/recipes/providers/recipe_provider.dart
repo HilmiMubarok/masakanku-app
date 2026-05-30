@@ -1,0 +1,30 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../domain/models/recipe.dart';
+import '../../../data/repositories/recipe_repository.dart';
+
+final recipesProvider = AsyncNotifierProvider<RecipesNotifier, List<Recipe>>(() {
+  return RecipesNotifier();
+});
+
+class RecipesNotifier extends AsyncNotifier<List<Recipe>> {
+  @override
+  Future<List<Recipe>> build() async {
+    return _fetchRecipes();
+  }
+
+  Future<List<Recipe>> _fetchRecipes() async {
+    final repository = ref.read(recipeRepositoryProvider);
+    return repository.getRecipes();
+  }
+
+  Future<void> addRecipe(String title, int servings, int cookingTime) async {
+    final repository = ref.read(recipeRepositoryProvider);
+    state = const AsyncValue.loading();
+    try {
+      await repository.saveRecipe(title, servings, cookingTime);
+      state = AsyncValue.data(await _fetchRecipes());
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+}

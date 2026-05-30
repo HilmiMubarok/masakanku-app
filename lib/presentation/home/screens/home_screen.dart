@@ -21,22 +21,25 @@ class HomeScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Haloo, Hilmi',
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: colors.bodyText.withValues(alpha: 0.7),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Haloo, Hilmi',
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: colors.bodyText.withValues(alpha: 0.7),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Hari ini mau masak apa nih?',
-                      style: textTheme.headlineLarge,
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        'Hari ini mau masak apa nih?',
+                        style: textTheme.headlineLarge,
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 16),
                 CircleAvatar(
                   backgroundColor: colors.lavenderAccent,
                   radius: 24,
@@ -223,12 +226,14 @@ class _QuickSuggestionCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.onTap,
   });
 
   final Color color;
   final IconData icon;
   final String title;
   final String subtitle;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -237,41 +242,50 @@ class _QuickSuggestionCard extends StatelessWidget {
 
     return Container(
       width: 120,
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 28,
-            color: colors.bodyText.withValues(alpha: 0.8),
-          ),
-          const Spacer(),
-          Text(
-            title,
-            style: textTheme.labelLarge?.copyWith(
-              color: colors.bodyText,
-              fontWeight: FontWeight.bold,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap ?? () {},
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: 28,
+                  color: colors.bodyText.withValues(alpha: 0.8),
+                ),
+                const Spacer(),
+                Text(
+                  title,
+                  style: textTheme.labelLarge?.copyWith(
+                    color: colors.bodyText,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colors.bodyText.withValues(alpha: 0.7),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: textTheme.labelSmall?.copyWith(
-              color: colors.bodyText.withValues(alpha: 0.7),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -43,6 +43,10 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
         child: ClipRRect(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24.0)),
           child: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: colors.mainPink,
+            unselectedItemColor: colors.outlineVariant,
+            showUnselectedLabels: true,
             currentIndex: _currentIndex,
             onTap: (index) {
               setState(() {

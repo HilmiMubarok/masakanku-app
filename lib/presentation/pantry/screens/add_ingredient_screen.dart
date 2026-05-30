@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../domain/models/ingredient.dart';
+import '../providers/pantry_provider.dart';
 
-class AddIngredientScreen extends StatefulWidget {
+class AddIngredientScreen extends ConsumerStatefulWidget {
   const AddIngredientScreen({super.key});
 
   @override
-  State<AddIngredientScreen> createState() => _AddIngredientScreenState();
+  ConsumerState<AddIngredientScreen> createState() => _AddIngredientScreenState();
 }
 
-class _AddIngredientScreenState extends State<AddIngredientScreen> {
-  final _nameController = TextEditingController();
+class _AddIngredientScreenState extends ConsumerState<AddIngredientScreen> {
   final _qtyController = TextEditingController();
-  String _selectedCategory = 'Sayuran';
+  Ingredient? _selectedIngredient;
   String _selectedUnit = 'gram';
   DateTime? _selectedDate;
+  bool _isLoading = false;
 
-  final List<String> _categories = ['Protein', 'Sayuran', 'Bumbu', 'Karbohidrat', 'Lainnya'];
   final List<String> _units = ['gram', 'kg', 'ml', 'liter', 'butir', 'ikat', 'siung'];
 
   @override
   void dispose() {
-    _nameController.dispose();
     _qtyController.dispose();
     super.dispose();
   }
@@ -39,10 +40,40 @@ class _AddIngredientScreenState extends State<AddIngredientScreen> {
     }
   }
 
+  void _saveIngredient() async {
+    if (_selectedIngredient == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih bahan terlebih dahulu')));
+      return;
+    }
+    
+    // Default to 1 if empty or invalid
+    final qty = double.tryParse(_qtyController.text) ?? 1.0;
+
+    setState(() => _isLoading = true);
+
+    try {
+      await ref.read(pantryProvider.notifier).addItem(
+        _selectedIngredient!.id,
+        qty,
+        _selectedUnit,
+        _selectedDate,
+      );
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>()!;
     final textTheme = Theme.of(context).textTheme;
+    final ingredientsAsync = ref.watch(ingredientsProvider);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -52,116 +83,150 @@ class _AddIngredientScreenState extends State<AddIngredientScreen> {
         title: Text('Tambah Bahan', style: textTheme.titleMedium),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Name Input
-            Text('Nama Bahan', style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.mainPink)),
-            const SizedBox(height: 8),
-            _buildTextField(controller: _nameController, hint: 'Misal: Telur Ayam', icon: Icons.fastfood_rounded, colors: colors),
-            const SizedBox(height: 24),
-
-            // Category Dropdown
-            Text('Kategori', style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.mainPink)),
-            const SizedBox(height: 8),
-            _buildDropdown(
-              value: _selectedCategory,
-              items: _categories,
-              onChanged: (val) => setState(() => _selectedCategory = val!),
-              icon: Icons.category_rounded,
-              colors: colors,
-            ),
-            const SizedBox(height: 24),
-
-            // Quantity & Unit
-            Row(
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Jumlah', style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.mainPink)),
-                      const SizedBox(height: 8),
-                      _buildTextField(
-                        controller: _qtyController,
-                        hint: '0',
-                        icon: Icons.scale_rounded,
-                        colors: colors,
-                        keyboardType: TextInputType.number,
+                // Ingredient Dropdown (from DB)
+                Text('Pilih Bahan', style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.mainPink)),
+                const SizedBox(height: 8),
+                ingredientsAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Text('Gagal memuat bahan: $e', style: TextStyle(color: colors.error)),
+                  data: (ingredients) {
+                    if (ingredients.isNotEmpty && _selectedIngredient == null) {
+                      // Automatically select the first ingredient to prevent null errors
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          setState(() {
+                            _selectedIngredient = ingredients.first;
+                          });
+                        }
+                      });
+                    }
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Satuan', style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.mainPink)),
-                      const SizedBox(height: 8),
-                      _buildDropdown(
-                        value: _selectedUnit,
-                        items: _units,
-                        onChanged: (val) => setState(() => _selectedUnit = val!),
-                        icon: Icons.straighten_rounded,
-                        colors: colors,
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<Ingredient>(
+                          value: _selectedIngredient,
+                          hint: const Text('Pilih dari daftar'),
+                          isExpanded: true,
+                          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.outline),
+                          items: ingredients.map((ing) => DropdownMenuItem(value: ing, child: Text(ing.name))).toList(),
+                          onChanged: (val) {
+                            setState(() {
+                              _selectedIngredient = val;
+                            });
+                          },
+                        ),
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              ],
-            ),
-            const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-            // Expiration Date
-            Text('Tanggal Kadaluarsa (Opsional)', style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.mainPink)),
-            const SizedBox(height: 8),
-            InkWell(
-              onTap: _pickDate,
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                decoration: BoxDecoration(
-                  color: colors.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
-                ),
-                child: Row(
+                // Quantity & Unit
+                Row(
                   children: [
-                    Icon(Icons.calendar_today_rounded, color: colors.outline),
-                    const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
-                        _selectedDate == null ? 'Pilih Tanggal' : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
-                        style: textTheme.bodyLarge?.copyWith(color: _selectedDate == null ? colors.outlineVariant : colors.onBackground),
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Jumlah', style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.mainPink)),
+                          const SizedBox(height: 8),
+                          _buildTextField(
+                            controller: _qtyController,
+                            hint: '0',
+                            icon: Icons.scale_rounded,
+                            colors: colors,
+                            keyboardType: TextInputType.number,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Satuan', style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.mainPink)),
+                          const SizedBox(height: 8),
+                          _buildDropdown(
+                            value: _selectedUnit,
+                            items: _units,
+                            onChanged: (val) => setState(() => _selectedUnit = val!),
+                            icon: Icons.straighten_rounded,
+                            colors: colors,
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ),
-            const SizedBox(height: 48),
+                const SizedBox(height: 24),
 
-            // Save Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.mainPink,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                // Expiration Date
+                Text('Tanggal Kadaluarsa (Opsional)', style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.mainPink)),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: _pickDate,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: colors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_today_rounded, color: colors.outline),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _selectedDate == null ? 'Pilih Tanggal' : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                            style: textTheme.bodyLarge?.copyWith(color: _selectedDate == null ? colors.outlineVariant : colors.onBackground),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                child: const Text('Simpan ke Kulkas', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
+                const SizedBox(height: 48),
+
+                // Save Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _saveIngredient,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.mainPink,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    child: const Text('Simpan ke Kulkas', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withValues(alpha: 0.2),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+        ],
       ),
     );
   }
