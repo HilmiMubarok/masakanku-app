@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../widgets/ingredient_card.dart';
+import 'add_ingredient_screen.dart';
 
 class PantryScreen extends StatefulWidget {
   const PantryScreen({super.key});
@@ -121,12 +122,15 @@ class _PantryScreenState extends State<PantryScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddIngredientScreen()),
+          );
+        },
         backgroundColor: colors.mainPink,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Tambah Bahan', style: TextStyle(fontWeight: FontWeight.bold)),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

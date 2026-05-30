@@ -1,0 +1,228 @@
+import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../recipes/screens/cooking_mode_screen.dart';
+
+class AIGeneratedResultScreen extends StatelessWidget {
+  const AIGeneratedResultScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Scaffold(
+      backgroundColor: colors.background,
+      appBar: AppBar(
+        backgroundColor: colors.background,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.close_rounded, color: colors.onBackground),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.auto_awesome_rounded, color: colors.mainPink, size: 20),
+            const SizedBox(width: 8),
+            Text('Resep AI Selesai!', style: textTheme.titleMedium?.copyWith(color: colors.mainPink, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Success Header
+            Center(
+              child: Container(
+                width: 160,
+                height: 160,
+                decoration: BoxDecoration(
+                  color: colors.peachAccent.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Icon(Icons.set_meal_rounded, size: 80, color: colors.peachAccent),
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            
+            Text(
+              'Ayam Goreng Mentega',
+              style: textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildInfoChip(context, Icons.schedule_rounded, '30 mnt', colors),
+                const SizedBox(width: 12),
+                _buildInfoChip(context, Icons.local_fire_department_rounded, '320 kcal', colors),
+              ],
+            ),
+            const SizedBox(height: 32),
+            
+            // Ingredients Used Section
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: colors.matchaGreen.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: colors.matchaGreen.withValues(alpha: 0.5)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.kitchen_rounded, color: colors.matchaGreen),
+                      const SizedBox(width: 8),
+                      Text('Bahan Kulkas yang Terpakai', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildIngredientItem(context, 'Ayam Potong', '500g', colors),
+                  _buildIngredientItem(context, 'Bawang Bombai', '1 buah', colors),
+                  _buildIngredientItem(context, 'Mentega', '2 sdm', colors),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            
+            Text(
+              'Cara Memasak',
+              style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            _buildStepItem(context, '1', 'Goreng ayam hingga kecoklatan. Angkat dan tiriskan.', colors),
+            _buildStepItem(context, '2', 'Tumis bawang bombai dengan mentega hingga harum.', colors),
+            _buildStepItem(context, '3', 'Masukkan ayam goreng, tambahkan kecap manis dan lada. Aduk rata.', colors),
+            
+            const SizedBox(height: 100), // Space for bottom buttons
+          ],
+        ),
+      ),
+      bottomSheet: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: colors.background,
+          boxShadow: [
+            BoxShadow(
+              color: colors.mainPink.withValues(alpha: 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -10),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.bookmark_border_rounded),
+                  label: const Text('Simpan'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    foregroundColor: colors.mainPink,
+                    side: BorderSide(color: colors.mainPink),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CookingModeScreen(title: 'Ayam Goreng Mentega')),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: colors.mainPink,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: const Text('Mulai Masak', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(BuildContext context, IconData icon, String label, AppColors colors) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: colors.outline),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(color: colors.onSurfaceVariant),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIngredientItem(BuildContext context, String name, String amount, AppColors colors) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle_rounded, size: 16, color: colors.matchaGreen),
+          const SizedBox(width: 8),
+          Expanded(child: Text(name, style: Theme.of(context).textTheme.bodyMedium)),
+          Text(amount, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colors.outline)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepItem(BuildContext context, String number, String text, AppColors colors) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: colors.mainPink.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                number,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(color: colors.mainPink, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(text, style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5)),
+          ),
+        ],
+      ),
+    );
+  }
+}

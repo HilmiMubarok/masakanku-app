@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../recipes/widgets/recipe_card.dart';
+import '../../ai_assistant/screens/ai_generated_result_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -87,7 +88,12 @@ class HomeScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const AIGeneratedResultScreen()),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.mainPink,
                         foregroundColor: Colors.white,
