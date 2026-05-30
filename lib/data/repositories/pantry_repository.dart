@@ -26,13 +26,7 @@ class PantryRepository {
     return data.map((json) => PantryItem.fromJson(json)).toList();
   }
 
-  Future<List<Ingredient>> getAllIngredients() async {
-    final data = await _supabase
-        .from('ingredients')
-        .select('*')
-        .order('name');
-    return data.map((json) => Ingredient.fromJson(json)).toList();
-  }
+
 
   Future<void> addPantryItem(String ingredientId, double quantity, String unit, DateTime? expiredAt) async {
     final response = await _supabase.from('pantry_items').insert({

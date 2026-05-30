@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/bottom_sheet_dropdown.dart';
 import '../providers/recipe_provider.dart';
 
 class AddRecipeScreen extends ConsumerStatefulWidget {
@@ -309,22 +310,15 @@ class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
     required IconData icon,
     required AppColors colors,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          isExpanded: true,
-          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.outline),
-          items: items.map((unit) => DropdownMenuItem(value: unit, child: Text(unit))).toList(),
-          onChanged: onChanged,
-        ),
-      ),
+    return buildBottomSheetDropdown(
+      context: context,
+      value: value,
+      items: items,
+      onChanged: onChanged,
+      icon: icon,
+      colors: colors,
+      textTheme: Theme.of(context).textTheme,
+      title: 'Pilih Satuan',
     );
   }
 

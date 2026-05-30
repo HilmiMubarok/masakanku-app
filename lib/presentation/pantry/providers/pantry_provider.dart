@@ -46,8 +46,4 @@ class PantryNotifier extends AsyncNotifier<List<PantryItem>> {
   }
 }
 
-// Provider for the master list of ingredients
-final ingredientsProvider = FutureProvider<List<Ingredient>>((ref) async {
-  final repository = ref.read(pantryRepositoryProvider);
-  return repository.getAllIngredients();
-});
+

@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../widgets/ingredient_card.dart';
 import 'add_ingredient_screen.dart';
+import 'ingredient_list_screen.dart';
 import '../providers/pantry_provider.dart';
 import '../../../features/ai/providers/ai_recipe_generator_provider.dart';
 import '../../ai_assistant/screens/ai_generated_result_screen.dart';
@@ -112,6 +113,25 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
               backgroundColor: colors.background,
               pinned: true,
               expandedHeight: 120,
+              actions: [
+                Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: colors.matchaGreen.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.inventory_2_rounded, color: colors.matchaGreen),
+                    tooltip: 'Master Bahan',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const IngredientListScreen()),
+                      );
+                    },
+                  ),
+                ),
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 titlePadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 title: Text(
