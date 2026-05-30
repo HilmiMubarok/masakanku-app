@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../home/screens/home_screen.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../home/screens/home_screen.dart';
+import '../../pantry/screens/pantry_screen.dart';
+import '../../ai_assistant/screens/ai_chat_screen.dart';
+import '../../recipes/screens/recipes_screen.dart';
+import '../../profile/screens/profile_screen.dart';
 
 class MainLayoutScreen extends StatefulWidget {
   const MainLayoutScreen({super.key});
@@ -14,10 +18,10 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const Center(child: Text('Halaman Kulkas')),
-    const Center(child: Text('AI Assistant')),
-    const Center(child: Text('Buku Resep')),
-    const Center(child: Text('Profil Kamu')),
+    const PantryScreen(),
+    const AIChatScreen(),
+    const RecipesScreen(),
+    const ProfileScreen(),
   ];
 
   @override

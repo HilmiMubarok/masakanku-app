@@ -21,6 +21,15 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color matchaGreen;
   final Color bodyText;
 
+  Color get background => creamBackground;
+  Color get surface => Colors.white;
+  Color get surfaceVariant => const Color(0xFFECE0E0);
+  Color get onSurfaceVariant => const Color(0xFF524345);
+  Color get onBackground => bodyText;
+  Color get outline => const Color(0xFF847375);
+  Color get outlineVariant => const Color(0xFFD6C1C4);
+  Color get error => const Color(0xFFBA1A1A);
+
   @override
   AppColors copyWith({
     Color? mainPink,
