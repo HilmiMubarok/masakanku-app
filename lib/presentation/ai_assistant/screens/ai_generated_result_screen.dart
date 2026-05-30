@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../recipes/screens/cooking_mode_screen.dart';
+import '../../../domain/models/recipe.dart';
 
 class AIGeneratedResultScreen extends StatelessWidget {
   const AIGeneratedResultScreen({super.key});
@@ -42,9 +43,11 @@ class AIGeneratedResultScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: colors.peachAccent.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Icon(Icons.set_meal_rounded, size: 80, color: colors.peachAccent),
+                  image: const DecorationImage(
+                    image: NetworkImage('https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80'),
+                    fit: BoxFit.cover,
+                  ),
+                  border: Border.all(color: colors.peachAccent, width: 4),
                 ),
               ),
             ),
@@ -142,7 +145,17 @@ class AIGeneratedResultScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const CookingModeScreen(title: 'Ayam Goreng Mentega')),
+                      MaterialPageRoute(builder: (_) => CookingModeScreen(
+                        title: 'Ayam Goreng Mentega',
+                        recipe: Recipe(
+                          id: 'dummy',
+                          userId: 'dummy',
+                          title: 'Ayam Goreng Mentega',
+                          cookingTime: 30,
+                          source: 'ai',
+                          servings: 2,
+                        ),
+                      )),
                     );
                   },
                   style: ElevatedButton.styleFrom(

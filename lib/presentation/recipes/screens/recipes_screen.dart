@@ -95,12 +95,14 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> with SingleTicker
                 itemBuilder: (context, index) {
                   final recipe = recipes[index];
                   return RecipeCard(
+                    recipe: recipe,
                     title: recipe.title,
                     time: '${recipe.cookingTime} mnt',
                     calories: '-', // No nutrition tracking in MVP yet
                     isGeneratedByAI: recipe.source == 'ai',
                     imageColor: colors.lavenderAccent,
                     icon: Icons.set_meal_rounded,
+                    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
                   );
                 },
               ),

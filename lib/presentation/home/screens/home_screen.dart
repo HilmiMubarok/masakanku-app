@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../recipes/widgets/recipe_card.dart';
 import '../../ai_assistant/screens/ai_generated_result_screen.dart';
+import '../../../domain/models/recipe.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -42,8 +43,8 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(width: 16),
                 CircleAvatar(
                   backgroundColor: colors.lavenderAccent,
+                  backgroundImage: const NetworkImage('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'),
                   radius: 24,
-                  child: Icon(Icons.person_rounded, color: colors.bodyText),
                 ),
               ],
             ),
@@ -165,12 +166,21 @@ class HomeScreen extends StatelessWidget {
 
             // Today's Pick Recipe Card
             RecipeCard(
+              recipe: Recipe(
+                id: 'dummy',
+                userId: 'dummy',
+                title: 'Ayam Goreng Mentega',
+                cookingTime: 30,
+                source: 'ai',
+                servings: 2,
+              ),
               title: 'Ayam Goreng Mentega',
               time: '30 mnt',
               calories: '320 kcal',
               isGeneratedByAI: true,
               imageColor: colors.secondaryPink,
               icon: Icons.set_meal_rounded,
+              imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80',
             ),
             const SizedBox(height: 32),
 

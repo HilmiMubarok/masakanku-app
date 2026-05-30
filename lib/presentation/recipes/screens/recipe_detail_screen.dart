@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
+import '../../../domain/models/recipe.dart';
 import '../../../core/theme/app_colors.dart';
 import 'cooking_mode_screen.dart';
 
 class RecipeDetailScreen extends StatelessWidget {
   const RecipeDetailScreen({
     super.key,
+    required this.recipe,
     required this.title,
     required this.time,
     required this.calories,
     required this.imageColor,
     required this.icon,
+    this.imageUrl,
   });
 
+  final Recipe recipe;
   final String title;
   final String time;
   final String calories;
   final Color imageColor;
   final IconData icon;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +45,18 @@ class RecipeDetailScreen extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Container(color: imageColor.withValues(alpha: 0.3)),
-                  Center(
-                    child: Icon(icon, size: 100, color: imageColor.withValues(alpha: 0.8)),
-                  ),
+                  if (imageUrl != null)
+                    Image.network(
+                      imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Center(
+                        child: Icon(icon, size: 100, color: imageColor.withValues(alpha: 0.8)),
+                      ),
+                    )
+                  else
+                    Center(
+                      child: Icon(icon, size: 100, color: imageColor.withValues(alpha: 0.8)),
+                    ),
                   Positioned(
                     bottom: 0,
                     left: 0,
@@ -91,11 +105,15 @@ class RecipeDetailScreen extends StatelessWidget {
                     style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
-                  _buildIngredientItem(context, 'Telur Ayam', '2 butir', colors),
-                  _buildIngredientItem(context, 'Sawi Hijau', '1 ikat', colors),
-                  _buildIngredientItem(context, 'Bawang Merah', '3 siung', colors),
-                  _buildIngredientItem(context, 'Bawang Putih', '2 siung', colors),
-                  _buildIngredientItem(context, 'Garam & Lada', 'Secukupnya', colors),
+                  if (recipe.ingredients != null && recipe.ingredients!.isNotEmpty)
+                    ...recipe.ingredients!.map((ing) => _buildIngredientItem(
+                          context, 
+                          ing.ingredient?.name ?? 'Bahan Tidak Diketahui', 
+                          '${ing.quantity ?? ''} ${ing.unit ?? ''}'.trim(), 
+                          colors
+                        ))
+                  else
+                    const Text('Tidak ada bahan-bahan.'),
                   
                   const SizedBox(height: 32),
                   Text(
@@ -139,7 +157,10 @@ class RecipeDetailScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => CookingModeScreen(title: title)),
+                  MaterialPageRoute(builder: (_) => CookingModeScreen(
+                    title: title,
+                    recipe: recipe,
+                  )),
                 );
               },
               style: ElevatedButton.styleFrom(

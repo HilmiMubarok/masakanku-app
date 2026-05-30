@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../providers/recipe_provider.dart';
 
-class AddRecipeScreen extends StatefulWidget {
+class AddRecipeScreen extends ConsumerStatefulWidget {
   const AddRecipeScreen({super.key});
 
   @override
-  State<AddRecipeScreen> createState() => _AddRecipeScreenState();
+  ConsumerState<AddRecipeScreen> createState() => _AddRecipeScreenState();
 }
 
-class _AddRecipeScreenState extends State<AddRecipeScreen> {
+class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
+  bool _isLoading = false;
   final _titleController = TextEditingController();
   final _timeController = TextEditingController();
   final _calController = TextEditingController();
@@ -44,6 +47,38 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         _steps.add(_stepController.text.trim());
         _stepController.clear();
       });
+    }
+  }
+
+  Future<void> _saveRecipe() async {
+    final title = _titleController.text.trim();
+    if (title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Judul resep tidak boleh kosong')));
+      return;
+    }
+
+    final time = int.tryParse(_timeController.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    final calories = int.tryParse(_calController.text.replaceAll(RegExp(r'[^0-9]'), ''));
+
+    setState(() => _isLoading = true);
+    
+    try {
+      await ref.read(recipesProvider.notifier).addRecipe(
+        title,
+        1, // Default servings
+        time,
+        calories,
+        _ingredients,
+        _steps,
+      );
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal menyimpan resep: $e')));
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -158,16 +193,20 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: _isLoading ? null : _saveRecipe,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.mainPink,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
-                child: const Text('Simpan Resep', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: _isLoading 
+                    ? const SizedBox(
+                        height: 20, 
+                        width: 20, 
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                      )
+                    : const Text('Simpan Resep', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
             const SizedBox(height: 24),

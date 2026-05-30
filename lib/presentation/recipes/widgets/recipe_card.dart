@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../domain/models/recipe.dart';
 import '../screens/recipe_detail_screen.dart';
 
 class RecipeCard extends StatelessWidget {
   const RecipeCard({
     super.key,
+    required this.recipe,
     required this.title,
     required this.time,
     required this.calories,
     required this.isGeneratedByAI,
     required this.imageColor,
     required this.icon,
+    this.imageUrl,
   });
 
+  final Recipe recipe;
   final String title;
   final String time;
   final String calories;
   final bool isGeneratedByAI;
   final Color imageColor;
   final IconData icon;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +36,13 @@ class RecipeCard extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (_) => RecipeDetailScreen(
+              recipe: recipe,
               title: title,
               time: time,
               calories: calories,
               imageColor: imageColor,
               icon: icon,
+              imageUrl: imageUrl,
             ),
           ),
         );
@@ -62,10 +69,20 @@ class RecipeCard extends StatelessWidget {
               width: double.infinity,
               color: imageColor.withValues(alpha: 0.3),
               child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  Center(
-                    child: Icon(icon, size: 64, color: imageColor.withValues(alpha: 0.8)),
-                  ),
+                  if (imageUrl != null)
+                    Image.network(
+                      imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Center(
+                        child: Icon(icon, size: 64, color: imageColor.withValues(alpha: 0.8)),
+                      ),
+                    )
+                  else
+                    Center(
+                      child: Icon(icon, size: 64, color: imageColor.withValues(alpha: 0.8)),
+                    ),
                   if (isGeneratedByAI)
                     Positioned(
                       top: 12,

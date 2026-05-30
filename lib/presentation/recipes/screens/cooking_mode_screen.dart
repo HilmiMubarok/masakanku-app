@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import '../../../domain/models/recipe.dart';
 import '../../../core/theme/app_colors.dart';
 
 class CookingModeScreen extends StatefulWidget {
   const CookingModeScreen({
     super.key,
     required this.title,
+    required this.recipe,
   });
 
   final String title;
+  final Recipe recipe;
 
   @override
   State<CookingModeScreen> createState() => _CookingModeScreenState();
@@ -17,12 +20,17 @@ class _CookingModeScreenState extends State<CookingModeScreen> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
 
-  final List<String> _steps = [
-    'Panaskan minyak di atas wajan dengan api sedang.',
-    'Tumis bawang merah dan bawang putih hingga harum dan layu.',
-    'Masukkan telur, lalu orak-arik hingga matang.',
-    'Tambahkan sawi hijau, bumbui dengan garam dan lada. Masak hingga layu. Angkat dan sajikan hangat.',
-  ];
+  late final List<String> _steps;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.recipe.steps != null && widget.recipe.steps!.isNotEmpty) {
+      _steps = widget.recipe.steps!.map((s) => s.instruction).toList();
+    } else {
+      _steps = ['Tidak ada langkah memasak yang tersedia untuk resep ini.'];
+    }
+  }
 
   @override
   void dispose() {

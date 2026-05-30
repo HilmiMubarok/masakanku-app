@@ -26,13 +26,7 @@ class ProfileScreen extends StatelessWidget {
               CircleAvatar(
                 radius: 40,
                 backgroundColor: colors.peachAccent,
-                child: Text(
-                  'H',
-                  style: textTheme.headlineLarge?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                backgroundImage: const NetworkImage('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'),
               ),
               const SizedBox(width: 16),
               Column(

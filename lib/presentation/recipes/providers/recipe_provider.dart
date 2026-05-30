@@ -17,14 +17,22 @@ class RecipesNotifier extends AsyncNotifier<List<Recipe>> {
     return repository.getRecipes();
   }
 
-  Future<void> addRecipe(String title, int servings, int cookingTime) async {
+  Future<void> addRecipe(
+    String title,
+    int servings,
+    int cookingTime,
+    int? calories,
+    List<String> ingredients,
+    List<String> steps,
+  ) async {
     final repository = ref.read(recipeRepositoryProvider);
     state = const AsyncValue.loading();
     try {
-      await repository.saveRecipe(title, servings, cookingTime);
+      await repository.saveRecipe(title, servings, cookingTime, calories, ingredients, steps);
       state = AsyncValue.data(await _fetchRecipes());
     } catch (e, st) {
       state = AsyncValue.error(e, st);
+      rethrow;
     }
   }
 }

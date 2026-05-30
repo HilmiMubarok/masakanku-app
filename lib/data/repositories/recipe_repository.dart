@@ -32,14 +32,80 @@ class RecipeRepository {
     return data.map((json) => Recipe.fromJson(json)).toList();
   }
 
-  // A basic save recipe function for manual recipes (MVP)
-  Future<void> saveRecipe(String title, int servings, int cookingTime) async {
-    await _supabase.from('recipes').insert({
+  Future<void> saveRecipe(
+    String title,
+    int servings,
+    int cookingTime,
+    int? calories,
+    List<String> ingredients,
+    List<String> steps,
+  ) async {
+    // 1. Insert resep
+    final recipeRes = await _supabase.from('recipes').insert({
       'user_id': _userId,
       'title': title,
       'servings': servings,
       'cooking_time': cookingTime,
       'source': 'manual',
-    });
+    }).select();
+
+    if (recipeRes.isEmpty) {
+      throw Exception('Gagal menyimpan resep utama');
+    }
+
+    final recipeId = recipeRes.first['id'];
+
+    // 2. Insert nutrisi jika ada kalori
+    if (calories != null) {
+      await _supabase.from('recipe_nutrition').insert({
+        'recipe_id': recipeId,
+        'calories': calories,
+      });
+    }
+
+    // 3. Insert bahan (ingredients & recipe_ingredients)
+    for (final ingName in ingredients) {
+      // Cek apakah ingredient dengan nama ini sudah ada (case-insensitive)
+      final existingIng = await _supabase
+          .from('ingredients')
+          .select('id')
+          .ilike('name', ingName)
+          .limit(1);
+
+      String ingredientId;
+      if (existingIng.isNotEmpty) {
+        ingredientId = existingIng.first['id'];
+      } else {
+        // Insert bahan baru
+        final newIng = await _supabase.from('ingredients').insert({
+          'name': ingName,
+          'category': 'Lainnya',
+          'icon': 'eco_rounded',
+          'color': '#CFE8C6',
+        }).select();
+        ingredientId = newIng.first['id'];
+      }
+
+      // Hubungkan ke resep
+      await _supabase.from('recipe_ingredients').insert({
+        'recipe_id': recipeId,
+        'ingredient_id': ingredientId,
+        'quantity': 1, // Default untuk string gabungan
+        'unit': '',
+      });
+    }
+
+    // 4. Insert steps
+    final stepsToInsert = steps.asMap().entries.map((entry) {
+      return {
+        'recipe_id': recipeId,
+        'step_number': entry.key + 1,
+        'instruction': entry.value,
+      };
+    }).toList();
+
+    if (stepsToInsert.isNotEmpty) {
+      await _supabase.from('recipe_steps').insert(stepsToInsert);
+    }
   }
 }
