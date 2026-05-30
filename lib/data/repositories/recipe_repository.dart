@@ -66,7 +66,7 @@ class RecipeRepository {
         'recipe_id': recipeId,
         if (calories != null) 'calories': calories,
         if (protein != null) 'protein': protein,
-        if (carbs != null) 'carbs': carbs,
+        if (carbs != null) 'carbohydrate': carbs,
         if (fat != null) 'fat': fat,
       });
     }

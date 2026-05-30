@@ -42,7 +42,7 @@ class Recipe {
       source: json['source'] as String?,
       calories: _parseNutrition(json['recipe_nutrition'], 'calories'),
       protein: _parseNutrition(json['recipe_nutrition'], 'protein'),
-      carbs: _parseNutrition(json['recipe_nutrition'], 'carbs'),
+      carbs: _parseNutrition(json['recipe_nutrition'], 'carbohydrate'),
       fat: _parseNutrition(json['recipe_nutrition'], 'fat'),
       ingredients: (json['recipe_ingredients'] as List<dynamic>?)
               ?.map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>))
